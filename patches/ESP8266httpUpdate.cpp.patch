@@ -1,0 +1,11 @@
+--- a/libraries/ESP8266httpUpdate/src/ESP8266httpUpdate.cpp
++++ b/libraries/ESP8266httpUpdate/src/ESP8266httpUpdate.cpp
+@@ -388,7 +388,7 @@ HTTPUpdateResult ESP8266HTTPUpdate::handleUpdate(HTTPClient& http, const String&
+                     DEBUG_HTTP_UPDATE("[httpUpdate] Update ok\n");
+                     http.end();
+ 
+-                    if(_rebootOnUpdate && !spiffs) {
++                    if(_rebootOnUpdate) {
+                         ESP.restart();
+                     }
+ 
