@@ -62,4 +62,9 @@ struct Config {
 
   double noControlValue;
   double controlValue;
+  double nightValue;
+  double slope;
+
+  unsigned char weekly[168]; // boolean
+  unsigned char nightly[168]; // boolean
 };
