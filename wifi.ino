@@ -29,7 +29,7 @@ unsigned long wifiRetryWait = 0;
 DNSServer dns;
 
 boolean wifiAsUsual() {
-  return WiFi.status() == WL_CONNECTED;
+  return WiFi.status() == WL_CONNECTED && !smartConfigActive;
 }
 
 void resetWifi() {
@@ -81,6 +81,10 @@ boolean setupMDNS() {
 }
 
 void loopWiFi() {
+  if (smartConfigActive)  {
+    return;
+  }
+
   loopSTA();
 
   const wl_status_t status = WiFi.status();

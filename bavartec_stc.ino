@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <ESP8266httpUpdate.h>
+#include <smartconfig.h>
 
 #include "types.h"
 
@@ -51,6 +52,7 @@ void loop() {
   loopOTA();
   loopMQTT();
   loopSerial();
+  loopSmartConfig();
 
   schedule(false);
 }
