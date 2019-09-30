@@ -1,0 +1,6 @@
+sketch @ 0x000000 (~1019KB) (1044464B)
+empty  @ 0x0FEFF0 (~2052KB) (2101264B)
+spiffs @ 0x300000 (~1004KB) (1028096B)
+eeprom @ 0x3FB000 (4KB)
+rfcal  @ 0x3FC000 (4KB)
+wifi   @ 0x3FD000 (12KB)
