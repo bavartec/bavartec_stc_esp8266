@@ -45,6 +45,10 @@ boolean updateNow() {
     return false;
   }
 
+  if (mqttClient.connected()) {
+    mqttClient.disconnect();
+  }
+
   if (wifiClientSecure.connected()) {
     wifiClientSecure.stop();
   }
