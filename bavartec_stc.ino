@@ -50,6 +50,7 @@ void loop() {
   loopServer();
   loopOTA();
   loopMQTT();
+  loopSerial();
 
   schedule(false);
 }

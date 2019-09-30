@@ -37,6 +37,9 @@ double controlFrequency1;
 double controlFrequency2;
 double controlFrequency3;
 
+// factory testing
+boolean redpencil = false;
+
 void setupGPIO() {
   pinMode(PIN_BUTTON, INPUT);
   pinMode(PIN_RELAY, OUTPUT);
@@ -99,7 +102,7 @@ void loopGPIO() {
   checkButton();
   digitalWrite(PIN_STATUS_LED, time & statusLED ? HIGH : LOW);
 
-  const boolean active = config.enabled && config.sensor != SENSOR::UNKNOWN;
+  const boolean active = (config.enabled || redpencil) && config.sensor != SENSOR::UNKNOWN;
 
   setActive(active);
 
@@ -108,6 +111,12 @@ void loopGPIO() {
   }
 
   coreGPIO();
+
+  if (redpencil) {
+    Serial.print(F("sensorResistance: "));
+    Serial.printf_P(PSTR("%.2f"), sensorResistance);
+    Serial.println();
+  }
 }
 
 void coreGPIO() {
