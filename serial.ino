@@ -36,7 +36,20 @@ void serialTerm(const String &input) {
 
   const String cmd = input.substring(0, space0);
 
-  if (cmd.equals("FLAG")) {
+  if (cmd.equals("ADCCAL")) {
+    const int space1 = input.indexOf(' ', space0 + 1);
+    const double x1 = input.substring(space0 + 1, space1).toDouble();
+    const double x2 = input.substring(space1 + 1).toDouble();
+
+    const double r = 1 / (1 / 100.0 + 1 / 1e6);
+    const double y1 = 3.3 * r / (r + inputReference(INPUT_TYPE::P10));
+    const double y2 = 3.3 * r / (r + 1 / (1 / inputReference(INPUT_TYPE::P1) + 1 / inputReference(INPUT_TYPE::P5)));
+
+    const double slope = (y2 - y1) / (x2 - x1);
+    const double offset = y2 - slope * x2;
+    config.adccal = AdcCal(slope, offset);
+    save();
+  } else if (cmd.equals("FLAG")) {
     const String flag = input.substring(space0 + 1);
 
     if (flag.equals("redpencil")) {

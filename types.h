@@ -39,6 +39,18 @@ struct WifiConfig {
   }
 };
 
+struct AdcCal {
+  double slope;
+  double offset;
+
+  AdcCal() {}
+
+  AdcCal(const double slope, const double offset) {
+    this->slope = slope;
+    this->offset = offset;
+  }
+};
+
 struct Eich {
   double beta;
   double r0;
@@ -74,6 +86,7 @@ struct MQTTConfig {
 struct Config {
   WifiConfig wifi;
 
+  AdcCal adccal;
   SENSOR sensor;
   Eich eich;
   unsigned char enabled; // boolean

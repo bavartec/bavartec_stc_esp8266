@@ -187,6 +187,10 @@ void handleQuery() {
   text += VERSION_DATA;
   text += "&wifi.ssid=";
   text += config.wifi.ssid;
+  text += "&adccal.slope=";
+  text += to_string(config.adccal.slope, 7, "%.4f");
+  text += "&adccal.offset=";
+  text += to_string(config.adccal.offset, 8, "%.4f");
   text += "&sensor=";
   text += sensorName(config.sensor);
   text += "&enabled=";
