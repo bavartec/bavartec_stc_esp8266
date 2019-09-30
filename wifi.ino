@@ -71,6 +71,16 @@ boolean setupMDNS() {
 void loopWiFi() {
   loopSTA();
 
+  const wl_status_t status = WiFi.status();
+
+  if (status == WL_CONNECTED) {
+    statusLED = ULONG_MAX;
+  } else if (status == WL_DISCONNECTED) {
+    statusLED = 0x200;
+  } else {
+    statusLED = 0x0;
+  }
+
   if (WiFi.isConnected()) {
     // WiFi::softAPgetStationNum breaks pending connections to AP
     MDNS.update();

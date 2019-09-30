@@ -22,8 +22,10 @@ const uint8_t PIN_RELAY = 5;
 const uint8_t PIN_CONTROL_1 = 13;
 const uint8_t PIN_CONTROL_2 = 12;
 const uint8_t PIN_CONTROL_3 = 14;
+const uint8_t PIN_STATUS_LED = 16;
 
 unsigned long pressTime = 0;
+unsigned long statusLED = 0x0;
 
 double sensorReading;
 double sensorVoltage;
@@ -41,8 +43,10 @@ void setupGPIO() {
   pinMode(PIN_CONTROL_1, OUTPUT);
   pinMode(PIN_CONTROL_2, OUTPUT);
   pinMode(PIN_CONTROL_3, OUTPUT);
+  pinMode(PIN_STATUS_LED, OUTPUT);
 
   digitalWrite(PIN_RELAY, LOW);
+  digitalWrite(PIN_STATUS_LED, LOW);
 
   pwm_init(PWM_PERIOD, pwm_duty_init, PWM_MAX_CHANNELS, io_info);
 }
@@ -90,7 +94,10 @@ boolean setActive(const boolean active) {
 }
 
 void loopGPIO() {
+  const unsigned long time = millis();
+
   checkButton();
+  digitalWrite(PIN_STATUS_LED, time & statusLED ? HIGH : LOW);
 
   const boolean active = config.enabled && config.sensor != SENSOR::UNKNOWN;
 

@@ -4,6 +4,12 @@ const double KELVIN = 273.15;
 
 Config config;
 
+const String to_string(const double value, const int width, const char format[]) {
+  char numstr[width];
+  sprintf(numstr, format, value);
+  return numstr;
+}
+
 void setup() {
   setupGPIO();
 
