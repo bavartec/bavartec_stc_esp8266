@@ -1,4 +1,6 @@
 #define PWM_MAX_CHANNELS 3
+#define PWM_USE_NMI 1
+#define PWM_MIRROR_DUTY 0
 
 #include "pwm.h"
 
