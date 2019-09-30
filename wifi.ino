@@ -1,3 +1,4 @@
+#include <DNSServer.h>
 #include <ESP8266mDNS.h>
 
 const __FlashStringHelper* statusName(const wl_status_t status) {
@@ -15,12 +16,17 @@ const __FlashStringHelper* statusName(const wl_status_t status) {
   return F("WL_UNKNOWN");
 }
 
+const IPAddress apIP(172, 217, 28, 206);
+const IPAddress netMask(255, 255, 255, 0);
+
 const char SSID[] = "Smart Thermo Control";
 const char PASSWORD[] = "smart-thermo-control";
 const char HOSTNAME[] = "smart-thermo-control";
 
 int wifiRetryCount = 0;
 unsigned long wifiRetryWait = 0;
+
+DNSServer dns;
 
 boolean wifiAsUsual() {
   return WiFi.status() == WL_CONNECTED;
@@ -48,6 +54,8 @@ void setupWiFi() {
 }
 
 boolean setupAP() {
+  WiFi.softAPConfig(apIP, apIP, netMask);
+
   if (!WiFi.softAP(SSID, PASSWORD, 1, true)) {
     Serial.println(F("access point setup failed"));
     return false;
@@ -56,6 +64,9 @@ boolean setupAP() {
   const IPAddress ip = WiFi.softAPIP();
   Serial.print(F("access point IP: "));
   Serial.println(ip);
+
+  dns.setErrorReplyCode(DNSReplyCode::NoError);
+  dns.start(53, "*", ip);
   return true;
 }
 
@@ -81,6 +92,8 @@ void loopWiFi() {
   } else {
     statusLED = 0x0;
   }
+
+  dns.processNextRequest();
 
   if (WiFi.isConnected()) {
     // WiFi::softAPgetStationNum breaks pending connections to AP

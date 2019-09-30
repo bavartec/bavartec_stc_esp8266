@@ -13,6 +13,7 @@ void setupServer() {
   server.on("/restart", handleRestart);
   server.on("/update", handleUpdate);
 
+  server.on("/generate_204", handleGenerate204);
   server.begin();
 }
 
@@ -23,6 +24,10 @@ void loopServer() {
 void flushServer() {
   server.client().flush();
   schedule(true);
+}
+
+void handleGenerate204() {
+  server.send(204);
 }
 
 void handleConfigInput() {
