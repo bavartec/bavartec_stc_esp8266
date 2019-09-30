@@ -113,6 +113,10 @@ void loopGPIO() {
   coreGPIO();
 
   if (redpencil) {
+    Serial.print(F("sensorReading: "));
+    Serial.printf_P(PSTR("%.4f"), sensorReading);
+    Serial.println();
+
     Serial.print(F("sensorResistance: "));
     Serial.printf_P(PSTR("%.2f"), sensorResistance);
     Serial.println();
@@ -134,11 +138,25 @@ void coreGPIO() {
   pwm_start();
 }
 
+double adcRead() {
+  uint16_t acc = 0;
+
+  // oversampling
+
+  for (size_t i = 0; i < 16; i++) {
+    acc += analogRead(A0);
+  }
+
+  // decimation
+
+  return round(acc / 4.0 + 0.5) / 4096.0;
+}
+
 void sensorRead(const INPUT_TYPE type, double &reading, double &voltage, double &resistance) {
-  reading = analogRead(A0) / 1024.0;
-  voltage = reading * 1.0; // best fit?
-  resistance = inputReference(type) * voltage / (3.3 - voltage);
-  resistance = 1 / (1 / resistance - 1 / 1e6); // pulldown, TODO: diode
+  reading = adcRead();
+  voltage = reading * config.adccal.slope + config.adccal.offset; // linear regression
+  resistance = inputReference(type) * voltage / (3.3 - voltage); // voltage divider
+  resistance = 1 / (1 / resistance - 1 / 1e6); // pulldown resistor
 }
 
 double controlFunc(const double sensorValue) {

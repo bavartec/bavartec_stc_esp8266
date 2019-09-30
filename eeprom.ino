@@ -16,6 +16,14 @@ void load() {
     config.wifi.pass[0] = '\0';
   }
 
+  if (isnan(config.adccal.slope)) {
+    config.adccal.slope = 1.0;
+  }
+
+  if (isnan(config.adccal.offset)) {
+    config.adccal.offset = 0.0;
+  }
+
   if (config.enabled == UCHAR_MAX) {
     config.enabled = false;
   }
