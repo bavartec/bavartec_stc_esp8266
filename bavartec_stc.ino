@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ESP8266httpUpdate.h>
 
 #include "types.h"
@@ -11,6 +12,16 @@ const String to_string(const double value, const int width, const char format[])
   char numstr[width];
   sprintf(numstr, format, value);
   return numstr;
+}
+
+int weekHour() {
+  if (!clockSet) {
+    return -1;
+  }
+
+  const time_t now = time(nullptr);
+  const tm* timeinfo = localtime(&now);
+  return timeinfo->tm_wday * 24 + timeinfo->tm_hour;
 }
 
 void setup() {
