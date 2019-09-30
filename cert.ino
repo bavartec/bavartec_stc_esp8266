@@ -61,7 +61,7 @@ boolean setClock() {
   Serial.println();
   Serial.print(F("Current time: "));
   Serial.print(asctime(&timeinfo));
-  return true;
+  return clockSet = true;
 }
 
 void setupCert() {

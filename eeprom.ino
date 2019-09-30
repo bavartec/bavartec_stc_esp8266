@@ -27,6 +27,26 @@ void load() {
   if (isnan(config.controlValue)) {
     config.controlValue = 20 + KELVIN;
   }
+
+  if (isnan(config.nightValue)) {
+    config.nightValue = 17 + KELVIN;
+  }
+
+  if (isnan(config.slope)) {
+    config.slope = 1.4;
+  }
+
+  if (config.weekly[0] == UCHAR_MAX) {
+    for (size_t i = 0; i < sizeof(config.weekly); i++) {
+      config.weekly[i] = false;
+    }
+  }
+
+  if (config.nightly[0] == UCHAR_MAX) {
+    for (size_t i = 0; i < sizeof(config.nightly); i++) {
+      config.nightly[i] = false;
+    }
+  }
 }
 
 boolean reconfig(const String &key, const String &value) {
@@ -40,6 +60,34 @@ boolean reconfig(const String &key, const String &value) {
     config.noControlValue = value.toDouble();
   } else if (key.equals("controlValue")) {
     config.controlValue = value.toDouble();
+  } else if (key.equals("nightValue")) {
+    config.nightValue = value.toDouble();
+  } else if (key.equals("slope")) {
+    config.slope = value.toDouble();
+  } else if (key.equals("weekly")) {
+    assert(value.length() == sizeof(config.weekly));
+
+    for (size_t i = 0; i < sizeof(config.weekly); i++) {
+      const char c = value.charAt(i);
+
+      if (c == '0') {
+        config.weekly[i] = false;
+      } else if (c == '1') {
+        config.weekly[i] = true;
+      }
+    }
+  } else if (key.equals("nightly")) {
+    assert(value.length() == sizeof(config.nightly));
+
+    for (size_t i = 0; i < sizeof(config.nightly); i++) {
+      const char c = value.charAt(i);
+
+      if (c == '0') {
+        config.nightly[i] = false;
+      } else if (c == '1') {
+        config.nightly[i] = true;
+      }
+    }
   } else {
     return false;
   }

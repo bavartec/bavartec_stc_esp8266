@@ -105,6 +105,10 @@ void handleQuery() {
   text += to_string(config.noControlValue, 7, "%.2f");
   text += "&controlValue=";
   text += to_string(config.controlValue, 7, "%.2f");
+  text += "&nightValue=";
+  text += to_string(config.nightValue, 7, "%.2f");
+  text += "&slope=";
+  text += to_string(config.slope, 5, "%.2f");
   server.send(200, "text/plain", text.c_str());
 }
 

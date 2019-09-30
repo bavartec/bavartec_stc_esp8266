@@ -97,5 +97,14 @@ void sensorRead(const INPUT_TYPE type, double &reading, double &voltage, double 
 }
 
 double controlFunc(const double sensorValue) {
-  return sensorValue + config.noControlValue - config.controlValue;
+  const int time = weekHour();
+
+  if (time < 0) {
+    return sensorValue;
+  }
+
+  const double noControlValue = config.nightly[time] ? config.nightValue : config.noControlValue;
+  const double controlValue = config.weekly[time] ? config.controlValue : config.nightValue;
+
+  return sensorValue + (noControlValue - controlValue) * (1 / config.slope + 1);
 }
