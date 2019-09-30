@@ -33,6 +33,9 @@ double controlFrequency1;
 double controlFrequency2;
 double controlFrequency3;
 
+// factory testing
+boolean redpencil = false;
+
 void setupGPIO() {
   pinMode(PIN_RELAY, OUTPUT);
   pinMode(PIN_SENSOR_VCC, OUTPUT);
@@ -69,7 +72,7 @@ boolean setActive(const boolean active) {
 }
 
 void loopGPIO() {
-  const boolean active = config.enabled && config.sensor != SENSOR::UNKNOWN;
+  const boolean active = (config.enabled || redpencil) && config.sensor != SENSOR::UNKNOWN;
   setActive(active);
 
   if (!active) {
@@ -87,6 +90,11 @@ void loopGPIO() {
   pwm_set_duty(round(controlFrequency2 * PWM_PERIOD), 1);
   pwm_set_duty(round(controlFrequency3 * PWM_PERIOD), 2);
   pwm_start();
+
+  if (redpencil) {
+    Serial.print(F("sensorResistance: "));
+    Serial.println(sensorResistance);
+  }
 }
 
 void sensorRead(const INPUT_TYPE type, double &reading, double &voltage, double &resistance) {
