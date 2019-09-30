@@ -24,17 +24,24 @@
 #ifndef PWM_MAX_CHANNELS
   #define PWM_MAX_CHANNELS 8
 #endif
-#define PWM_DEBUG 0
-#define PWM_USE_NMI 0
+#ifndef PWM_DEBUG
+  #define PWM_DEBUG 0
+#endif
+#ifndef PWM_USE_NMI
+  #define PWM_USE_NMI 0
+#endif
+#ifndef PWM_MIRROR_DUTY
+  #define PWM_MIRROR_DUTY 1
+#endif
 
 /* no user servicable parts beyond this point */
 
 #define PWM_MAX_TICKS 0x7fffff
 #if SDK_PWM_PERIOD_COMPAT_MODE
-#define PWM_PERIOD_TO_TICKS(x) (x * 0.2)
-#define PWM_DUTY_TO_TICKS(x) (x * 5)
-#define PWM_MAX_DUTY (PWM_MAX_TICKS * 0.2)
-#define PWM_MAX_PERIOD (PWM_MAX_TICKS * 5)
+#define PWM_PERIOD_TO_TICKS(x) (x * 5)
+#define PWM_DUTY_TO_TICKS(x) (x * 0.2)
+#define PWM_MAX_DUTY (PWM_MAX_TICKS * 5)
+#define PWM_MAX_PERIOD (PWM_MAX_TICKS * 0.2)
 #else
 #define PWM_PERIOD_TO_TICKS(x) (x)
 #define PWM_DUTY_TO_TICKS(x) (x)
@@ -223,15 +230,19 @@ _pwm_phases_prep(struct pwm_phase* pwm)
 		} else if (ticks >= pwm_period_ticks) {
 			pwm[0].on_mask |= gpio_mask[n];
 		} else {
+#if PWM_MIRROR_DUTY
 			if (ticks < (pwm_period_ticks/2)) {
+#endif
 				pwm[phases].ticks = ticks;
 				pwm[0].on_mask |= gpio_mask[n];
 				pwm[phases].off_mask = gpio_mask[n];
+#if PWM_MIRROR_DUTY
 			} else {
 				pwm[phases].ticks = pwm_period_ticks - ticks;
 				pwm[phases].on_mask = gpio_mask[n];
 				pwm[0].off_mask |= gpio_mask[n];
 			}
+#endif
 			phases++;
 		}
 	}
@@ -390,7 +401,7 @@ pwm_start(void)
 		pwm_state.current_set = pwm_state.next_set = *pwm;
 		pwm_state.current_phase = phases - 1;
 		ETS_FRC1_INTR_ENABLE();
-		RTC_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
+		TIMER_REG_WRITE(FRC1_LOAD_ADDRESS, 0);
 		timer->frc1_ctrl = TIMER1_DIVIDE_BY_16 | TIMER1_ENABLE_TIMER;
 		return;
 	}
