@@ -29,7 +29,7 @@ void load() {
   }
 }
 
-void reconfig(const String &key, const String &value) {
+boolean reconfig(const String &key, const String &value) {
   if (key.equals("enabled")) {
     if (value.equals("true")) {
       config.enabled = true;
@@ -40,7 +40,15 @@ void reconfig(const String &key, const String &value) {
     config.noControlValue = value.toDouble();
   } else if (key.equals("controlValue")) {
     config.controlValue = value.toDouble();
+  } else {
+    return false;
   }
+
+  Serial.print(F("config."));
+  Serial.print(key);
+  Serial.print(F(" = "));
+  Serial.println(value);
+  return true;
 }
 
 void save() {
