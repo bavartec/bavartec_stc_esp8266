@@ -40,6 +40,8 @@ double controlFrequency3;
 // factory testing
 boolean redpencil = false;
 
+boolean checkSoon = false;
+
 void setupGPIO() {
   pinMode(PIN_BUTTON, INPUT);
   pinMode(PIN_RELAY, OUTPUT);
@@ -102,7 +104,17 @@ void loopGPIO() {
   checkButton();
   digitalWrite(PIN_STATUS_LED, time & statusLED ? HIGH : LOW);
 
-  const boolean active = (config.enabled || redpencil) && config.sensor != SENSOR::UNKNOWN;
+  static unsigned long lastChecked = 1E9;
+  static boolean lastGood = true;
+
+  if (checkSoon) {
+    lastChecked = time;
+    lastGood = true;
+    checkSoon = false;
+  }
+
+  const boolean probablyGood = lastGood || time - lastChecked >= 3600 * 1000;
+  const boolean active = ((config.enabled && probablyGood) || redpencil) && config.sensor != SENSOR::UNKNOWN;
 
   setActive(active);
 
@@ -110,7 +122,17 @@ void loopGPIO() {
     return;
   }
 
-  coreGPIO();
+  const boolean good = coreGPIO();
+
+  if (good) {
+    lastChecked = time;
+    lastGood = true;
+  } else if (!lastGood) {
+    lastChecked = time;
+  } else if (time - lastChecked >= 5 * 1000) {
+    lastChecked = time;
+    lastGood = false;
+  }
 
   if (redpencil) {
     Serial.print(F("sensorReading: "));
@@ -123,19 +145,35 @@ void loopGPIO() {
   }
 }
 
-void coreGPIO() {
-  sensorRead(typeInput(config.sensor), sensorReading, sensorVoltage, sensorResistance);
+boolean coreGPIO() {
+  const boolean sensorGood = sensorRead(typeInput(config.sensor), sensorReading, sensorVoltage, sensorResistance);
 
   sensorTemperature = toTemperature(config.sensor, config.eich, sensorResistance);
   controlTemperature = controlFunc(sensorTemperature);
   controlResistance = toResistance(config.sensor, config.eich, controlTemperature);
 
-  control(controlResistance, controlFrequency1, controlFrequency2, controlFrequency3, config.sensor);
+  const CONTROL_STATUS controlStatus = control(controlResistance, controlFrequency1, controlFrequency2, controlFrequency3, config.sensor);
+  boolean controlGood = true;
+
+  if (controlStatus != CONTROL_STATUS::GOOD) {
+    const double high = toResistance(config.sensor, config.eich, max(sensorTemperature, controlTemperature));
+    const double low = toResistance(config.sensor, config.eich, min(sensorTemperature, controlTemperature));
+
+    double freq1, freq2, freq3;
+    const boolean controlHigh = control(high, freq1, freq2, freq3, config.sensor) == CONTROL_STATUS::IS_HIGH;
+    const boolean controlLow = control(low, freq1, freq2, freq3, config.sensor) == CONTROL_STATUS::IS_LOW;
+
+    if (controlHigh || controlLow) {
+      controlGood = false;
+    }
+  }
 
   pwm_set_duty(round(controlFrequency1 * PWM_PERIOD), 0);
   pwm_set_duty(round(controlFrequency2 * PWM_PERIOD), 1);
   pwm_set_duty(round(controlFrequency3 * PWM_PERIOD), 2);
   pwm_start();
+
+  return sensorGood && controlGood;
 }
 
 double adcRead() {
@@ -152,11 +190,12 @@ double adcRead() {
   return round(acc / 4.0 + 0.5) / 4096.0;
 }
 
-void sensorRead(const INPUT_TYPE type, double &reading, double &voltage, double &resistance) {
+boolean sensorRead(const INPUT_TYPE type, double &reading, double &voltage, double &resistance) {
   reading = adcRead();
   voltage = reading * config.adccal.slope + config.adccal.offset; // linear regression
   resistance = inputReference(type) * voltage / (3.3 - voltage); // voltage divider
   resistance = 1 / (1 / resistance - 1 / 1e6); // pulldown resistor
+  return reading < 1.0;
 }
 
 double controlFunc(const double sensorValue) {
