@@ -4,6 +4,7 @@ ESP8266WebServer server(80);
 
 void setupServer() {
   server.on("/", handleIndex);
+  server.on("/config/input", handleConfigInput);
   server.on("/config/sensor", handleConfigSensor);
   server.on("/config/wifi", handleConfigWifi);
   server.on("/control", handleControl);
@@ -29,10 +30,91 @@ void handleIndex() {
   server.send(302);
 }
 
+void handleConfigInput() {
+  const String typeArg = server.arg("type");
+
+  if (typeArg.length() == 0) {
+    server.send(200, "text/plain", "!P10");
+    return;
+  }
+
+  const INPUT_TYPE type = inputTypeByName(typeArg.c_str());
+
+  const boolean relayChanged = setActive(true);
+  delay(50);
+
+  double reading, voltage, resistance;
+  sensorRead(type, reading, voltage, resistance);
+
+  if (relayChanged) {
+    setActive(false);
+  }
+
+  const String dip = configInput(type, resistance);
+
+  if (dip.length()) {
+    server.send(200, "text/plain", ("!" + dip).c_str());
+    return;
+  }
+
+  String text = "?value=";
+  text += to_string(resistance, 10, "%.2f");
+
+  for (uint8_t i = 0; i <= lastSensor; i++) {
+    const SENSOR sensor = static_cast<SENSOR>(i);
+    const double temperature = toTemperature(sensor, eichSensor(sensor), resistance);
+    text += "&";
+    text += sensorName(sensor);
+    text += "=";
+    text += to_string(temperature, 7, "%.2f");
+  }
+
+  server.send(200, "text/plain", text.c_str());
+}
+
 void handleConfigSensor() {
   const String sensorArg = server.arg("sensor");
+  const String eichArg = server.arg("eich");
 
   config.sensor = sensorByName(sensorArg.c_str());
+  config.eich = eichSensor(config.sensor);
+
+  boolean mult;
+
+  switch (typeSensor(config.sensor)) {
+    case SENSOR_TYPE::NTC:
+      mult = true;
+      break;
+    case SENSOR_TYPE::PTC:
+      mult = false;
+      break;
+  }
+
+  int index = 0;
+  int count = 0;
+  double acc = mult ? 1 : 0;
+
+  while (index < eichArg.length()) {
+    const int delimiter0 = eichArg.indexOf(' ', index);
+    assert(delimiter0 > 0);
+
+    int delimiter1 = eichArg.indexOf(' ', delimiter0 + 1);
+
+    if (delimiter1 < 0) {
+      delimiter1 = eichArg.length();
+    }
+
+    const double t = eichArg.substring(index, delimiter0).toDouble();
+    const double r = eichArg.substring(delimiter0 + 1, delimiter1).toDouble();
+
+    const double beta = calcBeta(config.sensor, t, r);
+    acc = mult ? acc * beta : acc + beta;
+
+    index = delimiter1 + 1;
+    count++;
+  }
+
+  config.eich.beta = mult ? pow(acc, 1.0 / count) : acc / count;
   save();
 
   const String text = inputTypeName(typeInput(config.sensor));

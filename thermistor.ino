@@ -84,6 +84,44 @@ const __FlashStringHelper* inputTypeName(const INPUT_TYPE type) {
   return F("UNKNOWN");
 }
 
+const String configInput(const INPUT_TYPE type, const double r) {
+  switch (type) {
+    case INPUT_TYPE::P1:
+      if (r > 200) {
+        return "P5";
+      }
+      break;
+    case INPUT_TYPE::P5:
+      if (r > 700) {
+        return "P10";
+      } else if (r < 400) {
+        return "P1";
+      }
+      break;
+    case INPUT_TYPE::P10:
+      if (r > 1540) {
+        return "N2";
+      } else if (r > 400 && r < 700) {
+        return "P5";
+      } else if (r < 200) {
+        return "P1";
+      }
+      break;
+    case INPUT_TYPE::N2:
+      if (r > 7000) {
+        return "N10";
+      }
+      break;
+    case INPUT_TYPE::N10:
+      if (r > 31733) {
+        return "N20";
+      }
+      break;
+  }
+
+  return "";
+}
+
 const SENSOR_TYPE typeSensor(const SENSOR sensor) {
   switch (sensor) {
     case SENSOR::NTC1K:
