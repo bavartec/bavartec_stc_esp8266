@@ -84,6 +84,33 @@ const __FlashStringHelper* inputTypeName(const INPUT_TYPE type) {
   return F("UNKNOWN");
 }
 
+const INPUT_TYPE configInput(const INPUT_TYPE type, const double r) {
+  const double voltage = 0.99 * config.adccal.slope + config.adccal.offset; // linear regression
+  const uint8_t typeIndex = static_cast<uint8_t>(type);
+
+  if (typeIndex > 0) {
+    const INPUT_TYPE typeLower = static_cast<INPUT_TYPE>(typeIndex - 1);
+    double low = inputReference(typeLower) * voltage / (3.3 - voltage); // voltage divider
+    low = 1 / (1 / low - 1 / 1e6); // pulldown resistor
+
+    if (r <= low) {
+      return typeLower;
+    }
+  }
+
+  if (typeIndex < lastInputType) {
+    const INPUT_TYPE typeHigher = static_cast<INPUT_TYPE>(typeIndex + 1);
+    double high = inputReference(type) * voltage / (3.3 - voltage); // voltage divider
+    high = 1 / (1 / high - 1 / 1e6); // pulldown resistor
+
+    if (r > high) {
+      return typeHigher;
+    }
+  }
+
+  return type;
+}
+
 const SENSOR_TYPE typeSensor(const SENSOR sensor) {
   switch (sensor) {
     case SENSOR::NTC1K:
