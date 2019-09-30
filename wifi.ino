@@ -1,3 +1,5 @@
+#include <ESP8266mDNS.h>
+
 const __FlashStringHelper* statusName(const wl_status_t status) {
   switch (status) {
     case WL_IDLE_STATUS: return F("WL_IDLE_STATUS");
@@ -14,6 +16,7 @@ const __FlashStringHelper* statusName(const wl_status_t status) {
 
 const char SSID[] = "Smart Thermo Control";
 const char PASSWORD[] = "smart-thermo-control";
+const char HOSTNAME[] = "smart-thermo-control";
 
 int wifiRetryCount = 0;
 unsigned long wifiRetryWait = 0;
@@ -40,6 +43,7 @@ void setupWiFi() {
   schedule(false);
 
   setupAP();
+  setupMDNS();
 }
 
 boolean setupAP() {
@@ -54,8 +58,23 @@ boolean setupAP() {
   return true;
 }
 
+boolean setupMDNS() {
+  if (!MDNS.begin(HOSTNAME)) {
+    Serial.println(F("MDNS setup failed"));
+    return false;
+  }
+
+  MDNS.addService("http", "tcp", 80);
+  return true;
+}
+
 void loopWiFi() {
   loopSTA();
+
+  if (WiFi.isConnected()) {
+    // WiFi::softAPgetStationNum breaks pending connections to AP
+    MDNS.update();
+  }
 }
 
 void loopSTA() {
@@ -101,6 +120,7 @@ void loopSTA() {
   WiFi.disconnect(true);
   schedule(true);
 
+  WiFi.hostname(HOSTNAME);
   WiFi.begin(config.wifi.ssid, config.wifi.pass);
   schedule(false);
 
