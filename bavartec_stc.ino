@@ -3,6 +3,7 @@
 const double KELVIN = 273.15;
 
 Config config;
+boolean clockSet = false;
 
 const String to_string(const double value, const int width, const char format[]) {
   char numstr[width];
@@ -21,6 +22,7 @@ void setup() {
 
   setupWiFi();
   setupServer();
+  setupCert();
 
   Serial.println(F("setup done"));
 
