@@ -9,6 +9,7 @@ void setupServer() {
   server.on("/debug/listen", handleListen);
   server.on("/debug/query", handleQuery);
   server.on("/restart", handleRestart);
+  server.on("/update", handleUpdate);
 
   server.begin();
 }
@@ -88,6 +89,8 @@ void handleQuery() {
   text += WiFi.softAPmacAddress().c_str();
   text += "&version=";
   text += VERSION;
+  text += "&version-data=";
+  text += VERSION_DATA;
   text += "&wifi.ssid=";
   text += config.wifi.ssid;
   text += "&sensor=";
@@ -106,4 +109,9 @@ void handleRestart() {
   flushServer();
 
   ESP.restart();
+}
+
+void handleUpdate() {
+  updateSoon = true;
+  server.send(204);
 }
