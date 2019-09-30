@@ -52,6 +52,24 @@ struct Eich {
   }
 };
 
+struct MQTTConfig {
+  char server[256];
+  unsigned int port;
+
+  char user[32];
+  char pass[64];
+
+  MQTTConfig() {}
+
+  MQTTConfig(const String &server, const String &port, const String &user, const String &pass) {
+    save(this->server, sizeof(this->server), server);
+    this->port = port.toInt();
+
+    save(this->user, sizeof(this->user), user);
+    save(this->pass, sizeof(this->pass), pass);
+  }
+};
+
 struct Config {
   WifiConfig wifi;
 
@@ -66,4 +84,6 @@ struct Config {
 
   unsigned char weekly[168]; // boolean
   unsigned char nightly[168]; // boolean
+
+  MQTTConfig mqtt;
 };

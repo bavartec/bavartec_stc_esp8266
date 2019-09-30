@@ -29,6 +29,9 @@ for row in csvReader:
 del names[0] # Remove headers
 del pems[0] # Remove headers
 
+names.append("BavarTec MQTT Server")
+pems.append(open("mqtt-cert.pem", 'r').read())
+
 # Try and make ./data, skip if present
 os.makedirs("data", exist_ok=True)
 

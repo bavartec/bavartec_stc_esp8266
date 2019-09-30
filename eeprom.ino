@@ -47,6 +47,23 @@ void load() {
       config.nightly[i] = false;
     }
   }
+
+  if (config.mqtt.server[0] == UCHAR_MAX) {
+    config.mqtt.server[0] = '\0';
+    save(config.mqtt.server, sizeof(config.mqtt.server), "mqtt.bavartec.de");
+  }
+
+  if (config.mqtt.port == UINT_MAX) {
+    config.mqtt.port = 8883;
+  }
+
+  if (config.mqtt.user[0] == UCHAR_MAX) {
+    config.mqtt.user[0] = '\0';
+  }
+
+  if (config.mqtt.pass[0] == UCHAR_MAX) {
+    config.mqtt.pass[0] = '\0';
+  }
 }
 
 boolean reconfig(const String &key, const String &value) {

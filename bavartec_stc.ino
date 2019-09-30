@@ -37,6 +37,7 @@ void setup() {
   setupWiFi();
   setupServer();
   setupCert();
+  setupMQTT();
 
   Serial.println(F("setup done"));
 
@@ -48,6 +49,7 @@ void loop() {
   loopWiFi();
   loopServer();
   loopOTA();
+  loopMQTT();
 
   schedule(false);
 }

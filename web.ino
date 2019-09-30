@@ -5,6 +5,7 @@ ESP8266WebServer server(80);
 void setupServer() {
   server.on("/", handleIndex);
   server.on("/config/input", handleConfigInput);
+  server.on("/config/mqtt", handleConfigMQTT);
   server.on("/config/sensor", handleConfigSensor);
   server.on("/config/wifi", handleConfigWifi);
   server.on("/control", handleControl);
@@ -70,6 +71,21 @@ void handleConfigInput() {
   }
 
   server.send(200, "text/plain", text.c_str());
+}
+
+void handleConfigMQTT() {
+  const String serverArg = server.arg("server");
+  const String portArg = server.arg("port");
+  const String userArg = server.arg("user");
+  const String passArg = server.arg("pass");
+
+  config.mqtt = MQTTConfig(serverArg, portArg, userArg, passArg);
+  save();
+
+  server.send(204);
+  flushServer();
+
+  resetMQTT();
 }
 
 void handleConfigSensor() {
@@ -191,6 +207,12 @@ void handleQuery() {
   text += to_string(config.nightValue, 7, "%.2f");
   text += "&slope=";
   text += to_string(config.slope, 5, "%.2f");
+  text += "&mqtt.server=";
+  text += config.mqtt.server;
+  text += "&mqtt.port=";
+  text += config.mqtt.port;
+  text += "&mqtt.user=";
+  text += config.mqtt.user;
   server.send(200, "text/plain", text.c_str());
 }
 
