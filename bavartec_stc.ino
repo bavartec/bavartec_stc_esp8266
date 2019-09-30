@@ -1,3 +1,6 @@
+#include <ESP8266httpUpdate.h>
+#include <ESP8266WiFi.h>
+
 #include "types.h"
 
 const double KELVIN = 273.15;
@@ -26,6 +29,7 @@ void loop() {
   loopGPIO();
   loopWiFi();
   loopServer();
+  loopOTA();
 
   schedule(false);
 }

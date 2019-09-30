@@ -10,6 +10,7 @@ void setupServer() {
   server.on("/debug/listen", handleListen);
   server.on("/debug/query", handleQuery);
   server.on("/restart", handleRestart);
+  server.on("/update", handleUpdate);
 
   server.begin();
 }
@@ -112,4 +113,11 @@ void handleRestart() {
   flushServer();
 
   ESP.restart();
+}
+
+void handleUpdate() {
+  server.send(204);
+  flushServer();
+
+  updateNow();
 }
