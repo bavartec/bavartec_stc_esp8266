@@ -1,8 +1,12 @@
 #include "types.h"
 
+constexpr double KELVIN = 273.15;
+
 Config config;
 
 void setup() {
+  setupGPIO();
+
   Serial.begin(115200);
   Serial.println();
   Serial.println();
@@ -18,6 +22,7 @@ void setup() {
 }
 
 void loop() {
+  loopGPIO();
   loopWiFi();
   loopServer();
 
