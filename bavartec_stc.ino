@@ -15,6 +15,7 @@ void setup() {
 
   setupWiFi();
   setupServer();
+  setupCert();
 
   Serial.println(F("setup done"));
 
