@@ -10,12 +10,26 @@ const int ptc_xyz[8][3] = {
   {1, 0, 0},
   {0, 0, 0},
 };
+const double ptc_lookup[8] {
+  ptc_function_int_slow(0, 0, 0),
+  ptc_function_int_slow(0, 0, 1),
+  ptc_function_int_slow(0, 1, 0),
+  ptc_function_int_slow(0, 1, 1),
+  ptc_function_int_slow(1, 0, 0),
+  ptc_function_int_slow(1, 0, 1),
+  ptc_function_int_slow(1, 1, 0),
+  ptc_function_int_slow(1, 1, 1),
+};
 
-double inter(const double x, const int a, const int b) {
+inline double inter(const double x, const int a, const int b) {
   return x * (b - a) + a;
 }
 
-double ptc_function_int(const int x, const int y, const int z) {
+inline double ptc_function_int(const int x, const int y, const int z) {
+  return ptc_lookup[x << 2 | y << 1 | z];
+}
+
+double ptc_function_int_slow(const int x, const int y, const int z) {
   const double a = ptc_abg[0];
   const double b = ptc_abg[1];
   const double c = ptc_abg[2];
@@ -23,7 +37,7 @@ double ptc_function_int(const int x, const int y, const int z) {
   const double e = ptc_abg[4];
   const double f = ptc_abg[5];
   const double g = ptc_abg[6];
-  return g + 1 / (z / e + 1 / (f + 1 / (y / c + 1 / (d + 1 / (x / a + 1 / b)))));
+  return 1 / (g + 1 / (z / e + 1 / (f + 1 / (y / c + 1 / (d + 1 / (x / a + 1 / b))))));
 }
 
 void ptc_float(const double x, const double y, const double z, double &a, double &b, double &c, double &A, double &B, double &C, double &D) {
@@ -55,7 +69,7 @@ double ptc_function_float(const double x, const double y, const double z) {
   double a, b, c, A, B, C, D;
   ptc_float(x, y, z, a, b, c, A, B, C, D);
 
-  return 1 / (a / A + (b - a) / B + (c - b) / C + (1 - c) / D);
+  return 1 / (a * A + (b - a) * B + (c - b) * C + (1 - c) * D);
 }
 
 double ptc_function_inter(const double x0, const int i) {
@@ -120,8 +134,8 @@ double ptc_derivative_inter(const double x0, const int i) {
   double a, b, c, A, B, C, D;
   ptc_float(x, y, z, a, b, c, A, B, C, D);
 
-  const double u = (a2 - a1) / A + (a1 - a2 - b1 + b2) / B + (b1 - b2 - c1 + c2) / C + (c1 - c2) / D;
-  const double v = (x0 * (a2 - a1) + a1) / A + (-x * (a2 - a1) - a1 + x0 * (b2 - b1) + b1) / B + (-x0 * (b2 - b1) - b1 + x0 * (c2 - c1) + c1) / C + (-x0 * (c2 - c1) - c1 + 1) / D;
+  const double u = (a2 - a1) * A + (a1 - a2 - b1 + b2) * B + (b1 - b2 - c1 + c2) * C + (c1 - c2) * D;
+  const double v = (x0 * (a2 - a1) + a1) * A + (-x * (a2 - a1) - a1 + x0 * (b2 - b1) + b1) * B + (-x0 * (b2 - b1) - b1 + x0 * (c2 - c1) + c1) * C + (-x0 * (c2 - c1) - c1 + 1) * D;
 
   return -u / (v * v);
 }
