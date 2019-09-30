@@ -1,3 +1,5 @@
+#include <ESP8266httpUpdate.h>
+
 #include "types.h"
 
 const double KELVIN = 273.15;
@@ -23,6 +25,7 @@ void setup() {
   setupWiFi();
   setupServer();
   setupCert();
+  setupOTA();
 
   Serial.println(F("setup done"));
 
@@ -33,6 +36,7 @@ void loop() {
   loopGPIO();
   loopWiFi();
   loopServer();
+  loopOTA();
 
   schedule(false);
 }
