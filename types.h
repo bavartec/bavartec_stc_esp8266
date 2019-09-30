@@ -23,6 +23,10 @@ enum class OUTPUT_TYPE : uint8_t {
   NTC = 0, PTC,
 };
 
+enum class CONTROL_STATUS : uint8_t {
+  ERROR, IS_HIGH, GOOD, IS_LOW,
+};
+
 void save(char key[], const int keySize, const String &value) {
   strlcpy(key, value.c_str(), keySize);
 }

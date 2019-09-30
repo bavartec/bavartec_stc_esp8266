@@ -138,19 +138,19 @@ double newton(const double x0, const double y0, double (*function)(const double 
   return x;
 }
 
-void control(const double resistance, double &freq1, double &freq2, double &freq3, const SENSOR &sensor) {
+CONTROL_STATUS control(const double resistance, double &freq1, double &freq2, double &freq3, const SENSOR &sensor) {
   switch (typeOutput(sensor)) {
     case OUTPUT_TYPE::NTC:
-      control_ntc(resistance, freq1, freq2, freq3);
-      break;
+      return control_ntc(resistance, freq1, freq2, freq3);
 
     case OUTPUT_TYPE::PTC:
-      control_ptc(resistance, freq1, freq2, freq3);
-      break;
+      return control_ptc(resistance, freq1, freq2, freq3);
   }
+
+  return CONTROL_STATUS::ERROR;
 }
 
-void control_ntc(const double r, double &freq1, double &freq2, double &freq3) {
+CONTROL_STATUS control_ntc(const double r, double &freq1, double &freq2, double &freq3) {
   const double a = ntc_abe[0];
   const double b = ntc_abe[1];
   const double c = ntc_abe[2];
@@ -159,14 +159,14 @@ void control_ntc(const double r, double &freq1, double &freq2, double &freq3) {
 
   if (r - e >= d) {
     freq1 = freq2 = freq3 = 0;
-    return;
+    return CONTROL_STATUS::IS_HIGH;
   }
 
   if ((r - e) * (d + c) >= c * d) {
     // 1/((1-x)/(1/(1/d)+e)+x/(1/(1/c+1/d)+e))
     freq1 = freq2 = 0;
     freq3 = (c * (d + e) + e * d) * (d - r + e) / (d * d * r);
-    return;
+    return CONTROL_STATUS::GOOD;
   }
 
   if ((r - e) * (c * d + b * d + b * c) >= b * c * d) {
@@ -174,23 +174,24 @@ void control_ntc(const double r, double &freq1, double &freq2, double &freq3) {
     freq1 = 0;
     freq2 = (b * c * (d + e) + e * b * d + e * c * d) * (c * (d - r + e) + d * (e - r)) / (c * c * d * d * r);
     freq3 = 1;
-    return;
+    return CONTROL_STATUS::GOOD;
   }
 
   if ((r - e) * (b * c * d + a * c * d + a * b * d + a * b * c) >= a * b * c * d) {
     // 1/((1-x)/(1/(1/b+1/c+1/d)+e)+x/(1/(1/a+1/b+1/c+1/d)+e))
     freq1 = (a * b * (c * (d + e) + d * e) + a * c * d * e + b * c * d * e) * (b * c * (d + e - r) + b * d * (e - r) + c * d * (e - r)) / (b * b * c * c * d * d * r);
     freq2 = freq3 = 1;
-    return;
+    return CONTROL_STATUS::GOOD;
   }
 
   freq1 = freq2 = freq3 = 1;
+  return CONTROL_STATUS::IS_LOW;
 }
 
-void control_ptc(const double r, double &freq1, double &freq2, double &freq3) {
+CONTROL_STATUS control_ptc(const double r, double &freq1, double &freq2, double &freq3) {
   if (r <= ptc_function_inter(0, 0)) {
     freq1 = freq2 = freq3 = 1;
-    return;
+    return CONTROL_STATUS::IS_HIGH;
   }
 
   for (int i = 0; i < 7; i++) {
@@ -206,8 +207,9 @@ void control_ptc(const double r, double &freq1, double &freq2, double &freq3) {
     freq1 = inter(x, row0[0], row1[0]);
     freq2 = inter(x, row0[1], row1[1]);
     freq3 = inter(x, row0[2], row1[2]);
-    return;
+    return CONTROL_STATUS::GOOD;
   }
 
   freq1 = freq2 = freq3 = 0;
+  return CONTROL_STATUS::IS_LOW;
 }

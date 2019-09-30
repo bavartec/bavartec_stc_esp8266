@@ -123,6 +123,8 @@ void handleConfigSensor() {
   config.eich.beta = acc / count;
   save();
 
+  checkSoon = true;
+
   const String text = inputTypeName(typeInput(config.sensor));
   server.send(200, "text/plain", text.c_str());
 }
@@ -150,11 +152,15 @@ void handleControl() {
     }
   }
 
+  checkSoon = true;
+
   save();
   server.send(204);
 }
 
 void handleListen() {
+  checkSoon = true;
+
   String text = "sensorReading=";
   text += to_string(sensorReading, 7, "%.4f");
   text += "&sensorVoltage=";
