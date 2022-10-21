@@ -324,16 +324,34 @@ const Eich eichSensor(const SENSOR sensor) {
   return Eich(beta, r0, t0);
 }
 
+const Linearizer linearizeSensor(const SENSOR sensor) {
+  double rp = INFINITY;
+  double rs = 0;
+
+  return Linearizer(rp, rs);
+}
+
+inline double linearize(const Linearizer &linear, const double rt) {
+  return 1 / (1 / rt + 1 / linear.rp) + linear.rs;
+}
+
+inline double delinearize(const Linearizer &linear, const double r) {
+  return 1 / (1 / (r - linear.rs) - 1 / linear.rp);
+}
+
 const double calcBeta(const SENSOR sensor, const double t, const double r, double &weight) {
   const Eich eich = eichSensor(sensor);
+  const Linearizer linear = linearizeSensor(sensor);
+
+  const double rt = delinearize(linear, r);
 
   switch (typeSensor(sensor)) {
     case SENSOR_TYPE::NTC:
-      weight = r / eich.t0;
-      return log(r / eich.r0) / (1 / t - 1 / eich.t0);
+      weight = rt / eich.t0;
+      return log(rt / eich.r0) / (1 / t - 1 / eich.t0);
     case SENSOR_TYPE::PTC:
       weight = fabs(t - eich.t0);
-      return (r - eich.r0) / (t - eich.t0);
+      return (rt - eich.r0) / (t - eich.t0);
   }
 
   weight = 0;
@@ -341,23 +359,31 @@ const double calcBeta(const SENSOR sensor, const double t, const double r, doubl
 }
 
 const double toTemperature(const SENSOR sensor, const Eich &eich, const double r) {
+  const Linearizer linear = linearizeSensor(sensor);
+  const double rt = delinearize(linear, r);
+
   switch (typeSensor(sensor)) {
     case SENSOR_TYPE::NTC:
-      return eich.t0 * eich.beta / (eich.beta + eich.t0 * log(r / eich.r0));
+      return eich.t0 * eich.beta / (eich.beta + eich.t0 * log(rt / eich.r0));
     case SENSOR_TYPE::PTC:
-      return (r - eich.r0) / eich.beta + eich.t0;
+      return (rt - eich.r0) / eich.beta + eich.t0;
   }
 
   return nan("");
 }
 
 const double toResistance(const SENSOR sensor, const Eich &eich, const double t) {
+  double rt = nan("");
+
   switch (typeSensor(sensor)) {
     case SENSOR_TYPE::NTC:
-      return eich.r0 * exp(eich.beta * (1 / t - 1 / eich.t0));
+      rt = eich.r0 * exp(eich.beta * (1 / t - 1 / eich.t0));
+      break;
     case SENSOR_TYPE::PTC:
-      return (t - eich.t0) * eich.beta + eich.r0;
+      rt = (t - eich.t0) * eich.beta + eich.r0;
+      break;
   }
 
-  return nan("");
+  const Linearizer linear = linearizeSensor(sensor);
+  return linearize(linear, rt);
 }

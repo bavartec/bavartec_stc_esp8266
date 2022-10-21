@@ -69,6 +69,18 @@ struct Eich {
   }
 };
 
+struct Linearizer {
+  double rp;
+  double rs;
+
+  Linearizer() {}
+
+  Linearizer(const double rp, const double rs) {
+    this->rp = rp;
+    this->rs = rs;
+  }
+};
+
 struct MQTTConfig {
   char server[256];
   uint16_t port;
