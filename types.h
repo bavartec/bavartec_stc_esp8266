@@ -4,8 +4,9 @@ enum class SENSOR : uint8_t {
   PT100, PT500, PT1000,
   NI100, NI500, NI1000, NI1000TK5000,
   KTY1K, KTY2K,
+  QAC31,
 };
-const uint8_t lastSensor = static_cast<uint8_t>(SENSOR::KTY2K);
+const uint8_t lastSensor = static_cast<uint8_t>(SENSOR::QAC31);
 
 enum class SENSOR_TYPE : uint8_t {
   UNKNOWN = 0xFF,

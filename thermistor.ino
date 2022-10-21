@@ -27,6 +27,8 @@ const SENSOR sensorByName(const char* name) {
     return SENSOR::KTY1K;
   } else if (strcmp_P(name, PSTR("KTY2K")) == 0) {
     return SENSOR::KTY2K;
+  } else if (strcmp_P(name, PSTR("QAC31")) == 0) {
+    return SENSOR::QAC31;
   }
 
   return SENSOR::UNKNOWN;
@@ -48,6 +50,7 @@ const __FlashStringHelper* sensorName(const SENSOR sensor) {
     case SENSOR::NI1000TK5000: return F("NI1000TK5000");
     case SENSOR::KTY1K: return F("KTY1K");
     case SENSOR::KTY2K: return F("KTY2K");
+    case SENSOR::QAC31: return F("QAC31");
   }
 
   return F("UNKNOWN");
@@ -118,6 +121,7 @@ const SENSOR_TYPE typeSensor(const SENSOR sensor) {
     case SENSOR::NTC5K:
     case SENSOR::NTC10K:
     case SENSOR::NTC20K:
+    case SENSOR::QAC31:
       return SENSOR_TYPE::NTC;
 
     case SENSOR::PT100:
@@ -155,6 +159,7 @@ const INPUT_TYPE typeInput(const SENSOR sensor) {
 
     case SENSOR::PT500:
     case SENSOR::NI500:
+    case SENSOR::QAC31:
       return INPUT_TYPE::P5;
 
     case SENSOR::PT1000:
@@ -198,6 +203,7 @@ const OUTPUT_TYPE typeOutput(const SENSOR sensor) {
     case SENSOR::NI1000:
     case SENSOR::NI1000TK5000:
     case SENSOR::KTY1K:
+    case SENSOR::QAC31:
       return OUTPUT_TYPE::PTC;
   }
 
@@ -210,6 +216,9 @@ const Eich eichSensor(const SENSOR sensor) {
   double t0;
 
   switch (sensor) {
+    case SENSOR::QAC31:
+      beta = 3450;
+      break;
     case SENSOR::NTC1K:
       beta = 3536;
       break;
@@ -258,6 +267,9 @@ const Eich eichSensor(const SENSOR sensor) {
   }
 
   switch (sensor) {
+    case SENSOR::QAC31:
+      r0 = 330;
+      break;
     case SENSOR::NTC1K:
       r0 = 1000;
       break;
@@ -302,6 +314,7 @@ const Eich eichSensor(const SENSOR sensor) {
     case SENSOR::NTC5K:
     case SENSOR::NTC10K:
     case SENSOR::NTC20K:
+    case SENSOR::QAC31:
       t0 = 25 + KELVIN;
       break;
 
@@ -327,6 +340,13 @@ const Eich eichSensor(const SENSOR sensor) {
 const Linearizer linearizeSensor(const SENSOR sensor) {
   double rp = INFINITY;
   double rs = 0;
+
+  switch (sensor) {
+    case SENSOR::QAC31:
+      rp = 270;
+      rs = 1 / (1 / 700.0 + 1 / 1000.0);
+      break;
+  }
 
   return Linearizer(rp, rs);
 }
